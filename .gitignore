@@ -172,4 +172,4 @@ outputs*
 __MACOSX/*
 
 # data stuff
-./data/*
+data*

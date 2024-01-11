@@ -1,0 +1,13 @@
+# --------------------------- #
+# ---- RAG CONFIGURATION ---- #
+# --------------------------- #
+
+character_splitter:
+  chunk_size: 1000
+  chunk_overlap: 0
+token_splitter:
+  tokens_per_chunk: 256
+  chunk_overlap: 0
+collection_name: lex-data
+embed_func_name: SentenceTransformerEmbeddingFunction
+llm_model: gpt-4-1106-preview

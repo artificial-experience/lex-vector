@@ -1,0 +1,24 @@
+# ----------------------------- #
+# ---- HYDRA CONFIGURATION ---- #
+# ----------------------------- #
+
+hydra:
+  run:
+    dir: ../outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
+
+# -------------------------------- #
+# ---- DEFAULTS CONFIGURATION ---- #
+# -------------------------------- #
+
+defaults:
+  - _self_
+  - rag: baseline.yaml
+
+  - override hydra/job_logging: custom
+
+# ------------------------------ #
+# ---- DEVICE CONFIGURATION ---- #
+# ------------------------------ #
+
+device:
+  accelerator: "cpu"
