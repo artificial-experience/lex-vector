@@ -2,7 +2,7 @@
 name = "lex-vector"
 version = "0.1.0"
 description = ""
-authors = ["Sithael <chojnacki.jamie@gmail.com>"]
+authors = ["Jakub Chojnacki <james@marl.engineering>"]
 readme = "README.md"
 packages = [{include = "src"}]
 
@@ -11,7 +11,6 @@ python = "^3.11"
 poethepoet = "^0.21.1"
 chromadb = "^0.4.22"
 pre-commit = "^3.6.0"
-
 
 [build-system]
 requires = ["poetry-core"]
