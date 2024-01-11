@@ -2,9 +2,11 @@ import os
 from pathlib import Path
 
 import hydra
+import streamlit as st
 from dotenv import find_dotenv
 from dotenv import load_dotenv
-from omegaconf import OmegaConf
+from hydra.core.global_hydra import GlobalHydra
+from omegaconf import DictConfig
 from rag import RagBaseline
 
 from src.utils import constants
@@ -30,21 +32,49 @@ def extract_api_key() -> str:
     return api_key
 
 
-@hydra.main(version_base=None, config_path="conf", config_name="trial")
-def runner(cfg: OmegaConf) -> None:
-    rag_configuration = cfg["rag"]
+@st.cache_resource
+def get_rag_instance(_cfg):
+    rag_configuration = _cfg["rag"]
     api_key = extract_api_key()
     rag = RagBaseline(rag_configuration)
     rag.ensemble_rag(api_key=api_key)
+    return rag
 
+
+@st.cache_resource
+def load_and_feed_data(_cfg):
+    rag = get_rag_instance(_cfg)
     data_directory = constants.DATA_DIR / "examples"
     files = fetch_pdf_file_paths(data_directory)
     rag.feed_data_instances(files)
+    return rag
 
-    user_query = "Jaka jest kwota alimentow"
+
+def process_query(user_query: str, rag: RagBaseline) -> str:
     response = rag.forward_query(user_query)
-    print(response)
+    return response
+
+
+def streamlit_ui(cfg):
+    st.title("PDF Data Query Interface")
+    user_query = st.text_input("Enter your query:")
+
+    if st.button("Process Query") and user_query:
+        rag = load_and_feed_data(cfg)
+        response = process_query(user_query, rag)
+        st.write(response)
+
+
+def run_with_hydra():
+    if GlobalHydra.instance().is_initialized():
+        GlobalHydra.instance().clear()
+
+    @hydra.main(version_base=None, config_path="conf", config_name="trial")
+    def runner(cfg: DictConfig) -> None:
+        streamlit_ui(cfg)
+
+    runner()
 
 
 if __name__ == "__main__":
-    runner()
+    run_with_hydra()

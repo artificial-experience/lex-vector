@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.9.7 || >3.9.7,<3.13"
 poethepoet = "^0.21.1"
 chromadb = "^0.4.22"
 pre-commit = "^3.6.0"
@@ -22,6 +22,8 @@ pypdf = "^3.17.4"
 tqdm = "^4.66.1"
 openai = "^1.7.1"
 black = "^23.12.1"
+streamlit = "^1.30.0"
+watchdog = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core"]
