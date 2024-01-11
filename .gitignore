@@ -170,3 +170,6 @@ outputs*
 
 # MACOS
 __MACOSX/*
+
+# data stuff
+./data/*
