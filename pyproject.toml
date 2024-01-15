@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = "~=3.11"
 poethepoet = "^0.21.1"
 chromadb = "^0.4.22"
 pre-commit = "^3.6.0"
