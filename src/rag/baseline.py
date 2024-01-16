@@ -57,7 +57,12 @@ class RagBaseline:
                 chroma_collection=self._collection, file_path=feed_entity_path
             )
 
-    def forward_query(self, query, n_results: Optional[int] = 5):
+    def forward_query(
+        self,
+        query,
+        n_results: Optional[int] = 5,
+        n_document_to_accept: Optional[int] = 4,
+    ):
         augmented_query = self._augment_multiple_query(
             query=query, model=self._llm_model
         )
@@ -70,12 +75,32 @@ class RagBaseline:
 
         unique_documents = set()
         for documents in retrieved_doc_chunks:
-            for document in documents:
-                unique_documents.add(document)
+            unique_documents.add(documents)
 
+        unique_documents = list(unique_documents)
         ranked_documents = self._cross_encoder_ranking(query, unique_documents)
-        print(ranked_documents)
-        return 1
+        chosen_ranked_document_ids = ranked_documents[:n_document_to_accept]
+        chosen_documents = [unique_documents[idx] for idx in chosen_ranked_document_ids]
+
+        final_query = [query] + chosen_documents
+        final_query_squashed = "\n".join(final_query)
+
+        messages = [
+            {
+                "role": "system",
+                "content": "Jesteś systemem ekspertowym, którego zadaniem jest analizowanie i odpowiadanie na pytania związane ze sprawami alimentacyjnymi, opierając się wyłącznie na informacjach zawartych w treści zapytania"
+                "Twoim zadaniem jest dokładne przetworzenie treści zapytania i wydobycie z niego kluczowych informacji, które umożliwią udzielenie precyzyjnej i adekwatnej odpowiedzi"
+                "Pytanie użytkownika jest prezentowane jako pierwsze, po czym następuje analiza treści dokumentów, które są podstawą do udzielenia odpowiedzi",
+            },
+            {"role": "user", "content": final_query_squashed},
+        ]
+
+        response = self._openai_client.chat.completions.create(
+            model=self._llm_model,
+            messages=messages,
+        )
+        content = response.choices[0].message.content
+        return content
 
     def _augment_multiple_query(self, query: list, model: str):
         messages = [
@@ -99,13 +124,12 @@ class RagBaseline:
         return content
 
     def _cross_encoder_ranking(
-        self, original_query: str, unique_docs: tuple
+        self, original_query: str, unique_docs: list
     ) -> np.ndarray:
-        unique_docs_list = list(unique_docs)
         pairs = []
-        for doc in unique_docs_list:
+        for doc in unique_docs:
             pairs.append([original_query, doc])
 
         scores = self._cross_encoder.predict(pairs)
-        article_ids = np.argsort(scores)
+        article_ids = np.argsort(scores)[::-1]
         return article_ids
